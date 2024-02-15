@@ -56,11 +56,19 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                FilamentFullCalendarPlugin::make()
-                    ->selectable()
-                    ->editable()                    
-                    ->locale(config('app.locale'))
-                    ->timezone(config('app.timezone'))
+                FilamentFullCalendarPlugin::make()                
+                ->selectable()
+                ->editable()
+                ->config([
+                    'headerToolbar' => [
+                        'left' => 'prev,next today',
+                        'center' => 'title',
+                        'right' => 'dayGridMonth,timeGridWeek,timeGridDay list',
+                    ],
+                    'initialView' => 'timeGridWeek',
+                    'nowIndicator' => true,
+                    'allDaySlot' => false,
+                ])                                               
             ]); 
     }
 }
