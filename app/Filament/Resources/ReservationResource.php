@@ -25,7 +25,15 @@ class ReservationResource extends Resource
 {
     protected static ?string $model = Reservation::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Reservas';
+
+    protected static ?string $navigationIcon = 'heroicon-o-bookmark';
+
+    protected static ?string $navigationLabel = 'Reservas';
+
+    protected static ?string $navigationGroup = 'Booking';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -52,9 +60,9 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name'),
-                TextColumn::make('track.title'),
-                TextColumn::make('title'),
+                TextColumn::make('user.name')->label('Cliente'),
+                TextColumn::make('track.name')->label('Lugar'),
+                TextColumn::make('title')->label('Cita'),
                 TextColumn::make('start_time')->dateTime('Y-m-d H:i'),
                 TextColumn::make('end_time')->dateTime('Y-m-d H:i'),
             ])
@@ -87,7 +95,7 @@ class ReservationResource extends Resource
         return [
             'index'  => ListReservations::route('/'),
             'create' => CreateReservation::route('/create'),
-            // 'edit'   => EditReservation::route('/{record}/edit'),
+            'edit'   => EditReservation::route('/{record}/edit'),
         ];
     }
 }

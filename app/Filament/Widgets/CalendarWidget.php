@@ -4,9 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Models\Reservation;
 use App\Models\Task;
+use App\Models\Track;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
@@ -47,7 +49,7 @@ class CalendarWidget extends FullCalendarWidget
                         'end_time' => $arguments['end'] ?? null
                     ]);
                 }
-            ),
+            )->label('Crear Reserva'),
         ];
     }
  
@@ -56,10 +58,11 @@ class CalendarWidget extends FullCalendarWidget
         return [
             EditAction::make()
             ->mountUsing(
-                function (Reservation $record, Form $form, array $arguments) {
+                function (Reservation $record, Form $form, array $arguments) {                    
                     $form->fill([
-                        'title' => $record->title,
-                        'description' => $record->description,
+                        'title' => $arguments['event']['title'] ?? $record->title,
+                        'track_id' => $arguments['event']['track_id'] ?? $record->track_id,
+                        'description' => $arguments['event']['description'] ?? $record->description,
                         'start_time' => $arguments['event']['start'] ?? $record->start_time,
                         'end_time' => $arguments['event']['end'] ?? $record->end_time
                     ]);
@@ -79,11 +82,14 @@ class CalendarWidget extends FullCalendarWidget
         return [
             TextInput::make('title'),
             TextInput::make('description'),
- 
+
+            Select::make('track_id')
+                ->label('Lugar')
+                ->options(Track::all()->pluck('name', 'id')),
+
             Grid::make()
                 ->schema([
-                    DateTimePicker::make('start_time'),
- 
+                    DateTimePicker::make('start_time'), 
                     DateTimePicker::make('end_time'),
                 ]),
         ];

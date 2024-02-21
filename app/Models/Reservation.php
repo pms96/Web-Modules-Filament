@@ -10,7 +10,7 @@ class Reservation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'track_id', 'start_time', 'end_time'];
+    protected $fillable = ['user_id', 'track_id', 'start_time', 'end_time', 'title', 'description'];
 
     public function track(): BelongsTo
     {

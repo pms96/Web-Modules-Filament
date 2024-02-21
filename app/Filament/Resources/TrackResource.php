@@ -22,7 +22,16 @@ class TrackResource extends Resource
 {
     protected static ?string $model = Track::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Lugares';
+
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    protected static ?string $navigationLabel = 'Lugares';
+
+    protected static ?string $navigationGroup = 'Booking';
+
+    protected static ?int $navigationSort = 3;
+
 
     public static function form(Form $form): Form
     {
@@ -36,7 +45,7 @@ class TrackResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nameuitar de la portada de noticias la sección de bspro,'),
+                TextColumn::make('name')->label('Lugar'),
             ])
             ->filters([
                 //
