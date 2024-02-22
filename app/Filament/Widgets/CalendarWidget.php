@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\Track;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Grid;
@@ -27,12 +28,14 @@ class CalendarWidget extends FullCalendarWidget
         return Reservation::where('start_time', '>=', $fetchInfo['start'])
             ->where('end_time', '<=', $fetchInfo['end'])
             ->get()
-            ->map(function (Reservation $task) {
+            ->map(function (Reservation $task) {                
                 return [
-                    'id'            => $task->id,                    
-                    'title'         => $task->title,                                                            
-                    'start'         => $task->start_time,
-                    'end'           => $task->end_time,
+                    'id'                => $task->id,                    
+                    'title'             => $task->user->name,                                                            
+                    'start'             => $task->start_time,
+                    'end'               => $task->end_time,
+                    'backgroundColor'   => $task->track->color,
+                    'borderColor'       => $task->track->color,
                 ];
             })
             ->toArray();
@@ -60,11 +63,10 @@ class CalendarWidget extends FullCalendarWidget
             ->mountUsing(
                 function (Reservation $record, Form $form, array $arguments) {                    
                     $form->fill([
-                        'title' => $arguments['event']['title'] ?? $record->title,
-                        'track_id' => $arguments['event']['track_id'] ?? $record->track_id,
-                        'description' => $arguments['event']['description'] ?? $record->description,
-                        'start_time' => $arguments['event']['start'] ?? $record->start_time,
-                        'end_time' => $arguments['event']['end'] ?? $record->end_time
+                        'user_id'       => $arguments['event']['user_id'] ?? $record->user_id,
+                        'track_id'      => $arguments['event']['track_id'] ?? $record->track_id,                        
+                        'start_time'    => $arguments['event']['start'] ?? $record->start_time,
+                        'end_time'      => $arguments['event']['end'] ?? $record->end_time
                     ]);
                 }
             ),
@@ -79,9 +81,11 @@ class CalendarWidget extends FullCalendarWidget
  
     public function getFormSchema(): array
     {
-        return [
-            TextInput::make('title'),
-            TextInput::make('description'),
+        return [            
+            Select::make('user_id')
+                ->label('Cliente')
+                ->options(User::all()->pluck('name', 'id'))
+                ->searchable(),
 
             Select::make('track_id')
                 ->label('Lugar')
@@ -92,6 +96,7 @@ class CalendarWidget extends FullCalendarWidget
                     DateTimePicker::make('start_time'), 
                     DateTimePicker::make('end_time'),
                 ]),
+            
         ];
     }
  

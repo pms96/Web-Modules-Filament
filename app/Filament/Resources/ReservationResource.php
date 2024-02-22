@@ -8,10 +8,15 @@ use App\Filament\Resources\ReservationResource\Pages\EditReservation;
 use App\Filament\Resources\ReservationResource\Pages\ListReservations;
 use App\Filament\Resources\ReservationResource\RelationManagers;
 use App\Models\Reservation;
+use App\Models\User;
 use App\Services\ReservationService;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -41,18 +46,22 @@ class ReservationResource extends Resource
 
         return $form
             ->schema([
+                Select::make('user_id')
+                    ->label('Paciente')
+                    ->searchable()
+                    ->required()
+                    ->options(User::all()->pluck('name', 'id')),
                 DatePicker::make('date')
+                    ->label('Fecha')
                     ->native(false)
                     ->minDate(now()->format($dateFormat))
-                    ->maxDate(now()->addWeeks(2)->format($dateFormat))
+                    ->maxDate(now()->addMonths(4)->format($dateFormat))
                     ->format($dateFormat)
+                    ->disabledDates(ReservationService::disableDatesTimeZone())
                     ->required()
                     ->live(),
-                Radio::make('track')
-                    ->options(fn (Get $get) => (new ReservationService())->getAvailableTimesForDate($get('date')))
-                    ->hidden(fn (Get $get) => ! $get('date'))
-                    ->required()
-                    ->columnSpan(2),
+                Tabs::make('Tabs')
+                    ->tabs(fn (Get $get) => (new ReservationService())->getTracksAvailableForDate($get('date') ?? date('Y-m-d')))                    
             ]);
     }
 
@@ -62,7 +71,6 @@ class ReservationResource extends Resource
             ->columns([
                 TextColumn::make('user.name')->label('Cliente'),
                 TextColumn::make('track.name')->label('Lugar'),
-                TextColumn::make('title')->label('Cita'),
                 TextColumn::make('start_time')->dateTime('Y-m-d H:i'),
                 TextColumn::make('end_time')->dateTime('Y-m-d H:i'),
             ])
@@ -71,6 +79,7 @@ class ReservationResource extends Resource
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
