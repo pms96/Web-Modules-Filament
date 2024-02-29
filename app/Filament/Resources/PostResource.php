@@ -10,19 +10,17 @@ use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
-use Filament\Infolists\Components\Split;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class PostResource extends Resource
@@ -37,39 +35,56 @@ class PostResource extends Resource
     {
         return $form
         ->schema([
-            Split::make([
-                Section::make()
-                ->columns(1)
-                ->schema([
-                    TextInput::make('title')
-                    ->required()
-                    ->maxLength(2048)
-                    ->reactive()
-                    ->afterStateUpdated(function (Closure $set, $state) {
-                        $set('slug', Str::slug($state));
-                    }),
-                    TextInput::make('slug')
+            Tabs::make('Post')
+            ->tabs([
+                Tab::make('General')
+                    ->schema([
+                        TextInput::make('title')
                         ->required()
-                        ->maxLength(2048),
-                    RichEditor::make('body')
-                        ->required(),
-                    TextInput::make('meta_title')
-                        ->maxLength(255),
-                    Textarea::make('meta_description')
-                        ->maxLength(255),
-                    Toggle::make('active')
-                        ->required(),
-                    DateTimePicker::make('published_at'),
-                ]),
-                Section::make()
-                ->columns(1)
-                ->schema([
-                    FileUpload::make('thumbnail'),
-                    Select::make('categories')
-                        ->multiple()
-                        ->relationship('categories', 'title'), 
-                ])->grow(false),
-            ])->from('md')
+                        ->maxLength(2048)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(
+                            fn (Set $set, ?string $state) => $set('slug', Str::slug($state))
+                        ),
+                        TextInput::make('slug')
+                            ->required()
+                            ->maxLength(2048),
+                        RichEditor::make('body')
+                            ->required()
+                            ->toolbarButtons([
+                                'attachFiles',
+                                'blockquote',
+                                'bold',
+                                'bulletList',
+                                'codeBlock',
+                                'h2',
+                                'h3',
+                                'italic',
+                                'link',
+                                'orderedList',
+                                'redo',
+                                'strike',
+                                'underline',
+                                'undo',
+                            ]),
+                        TextInput::make('meta_title')
+                            ->maxLength(255),
+                        Textarea::make('meta_description')
+                            ->maxLength(255),
+                        Toggle::make('active')
+                            ->required(),
+                        DateTimePicker::make('published_at'),
+                    ]),
+                Tab::make('Image')
+                    ->schema([
+                        FileUpload::make('thumbnail'),
+                        Select::make('categories')
+                            ->multiple()
+                            ->relationship('categories', 'title'),
+                    ]),
+            ])
+            // ->contained(false)
+            ->columnSpanFull(),
         ]);
     }
 
@@ -113,7 +128,7 @@ class PostResource extends Resource
         return [
             'index' => Pages\ListPosts::route('/'),
             'create' => Pages\CreatePost::route('/create'),
-            //'view' => Pages\ViewPost::route('/{record}'),
+            'view' => Pages\ViewPost::route('/{record}'),
             'edit' => Pages\EditPost::route('/{record}/edit'),
         ];
     }    
